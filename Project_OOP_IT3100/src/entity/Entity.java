@@ -1,4 +1,4 @@
-package entity;
+package Entity;
 
 import javafx.scene.image.Image;
 
@@ -56,7 +56,8 @@ public class Entity {
     public Image std1_l, std2_l, std3_l, std4_l, std5_l, std6_l, std7_l, std8_l;
     public Image att2_1r, att2_2r, att2_3r, att2_4r, att2_5r, att2_6r, att2_7r, att2_8r;
     public Image att2_1l, att2_2l, att2_3l, att2_4l, att2_5l,att2_6l, att2_7l, att2_8l;
-
+    public Image hit1_r, hit2_r, hit3_r;
+    public Image hit1_l, hit2_l, hit3_l;
 
 
 

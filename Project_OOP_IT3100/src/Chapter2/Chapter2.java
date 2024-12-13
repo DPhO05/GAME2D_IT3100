@@ -2,10 +2,10 @@ package Chapter2;
 
 import MainMenu.ChapterMenu;
 import MainMenu.GameLauncher;
-import entity.KeyHandlers;
+import Entity.KeyHandlers;
 
-import entity.Player1_2;
-import entity.Player2_2;
+import Entity.Player1_2;
+import Entity.Player2_2;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -305,8 +305,6 @@ public class Chapter2 extends Pane {
                 player1_2.update();
                 player2_2.update();
 
-                System.out.println("Current Health: " + player1_2.getHealth());
-                System.out.println("Current Health: " + player2_2.getHealth());
 
                 if (player2_2 != null && player2_2.isAttacking() && player2_2.getAttackBody().intersects(player1_2.getBody())) {
                     if (player1_2.isDenfensed() && player2_2.getDirection() != player1_2.direction) {

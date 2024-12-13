@@ -1,6 +1,8 @@
-package entity;
+package Entity;
 
 import java.io.File;
+import java.util.function.BiPredicate;
+
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.LinearGradient;
@@ -10,23 +12,24 @@ import javafx.scene.image.Image;
 
 
 
-import entity.Player1;
+import Entity.Player2_2;
 
 import Chapter1.Chapter1;
-import entity.KeyHandlers;
+import Entity.KeyHandlers;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 
 public class Player extends Entity{
-    
+
     Player1 player1;
+    private Body body;
+    private Body attackBody;
 
-
-    public int maxHealth = 3000; // Máu tối đa, giả sử là 3.000 để phù hợp với số trên hình ảnh
+    public double maxHealth = 3000; // Máu tối đa, giả sử là 3.000 để phù hợp với số trên hình ảnh
     public int currentHealth = 3000; // Máu hiện tại
     private int barWidth = 400; // Chiều rộng của thanh máu
     private int barHeight = 20; // Chiều cao của thanh máu
-    
+
     private int controlDamage = 0;
 
 
@@ -34,13 +37,13 @@ public class Player extends Entity{
 
     private int animationFrame = 0; // Biến đếm khung hình hiện tại
     private int animationCounter = 0; // Biến đếm thời gian chuyển đổi khung hình
-    private final int animationSpeed = 30; // Tốc độ chuyển đổi khung hình
+    private final int animationSpeed = 25; // Tốc độ chuyển đổi khung hình
     private boolean isMoving = false; // Biến để kiểm tra xem nhân vật có di chuyển hay không
     private boolean isUsingSkill = false;
     private boolean isUsingJump = false;
+    private boolean isUsingSkillJ = false;
     private int skillCounter = 0; // Đếm thời gian để điều khiển hoạt ảnh skill
     private boolean isUsingSkillK = false;
-    private boolean isUsingSkillJ = false;
     private int skillKCounter = 0; // Đếm thời gian để điều khiển hoạt ảnh skill qua phím K
     Chapter1 gp;
     public KeyHandlers keyH;
@@ -52,24 +55,34 @@ public class Player extends Entity{
         this.player1 = player1;
         setDefaultValues();
         getPlayerImage();
-        updateHealth(getHealth());
+//        updateHealth();
+        body = new Body(x,y,200, 200);
+        attackBody = new Body(x,y, 200, 200);
 
+    }
+
+    public Body getBody(){
+        return body;
+    }
+    public Body getAttackBody(){
+        return attackBody;
     }
     public void setDefaultValues(){
         x = 0;
-        y = 500;
+        y = 550;
         speed = 4;
         direction = "down";
+
     }
 
 
     public boolean isAttacking(){
         if(isUsingSkillK || isUsingSkillJ) return true;
-        else return false;
+        return false;
     }
     public boolean isDenfensed(){
         if(isUsingSkill) return true;
-        else return false;
+        return false;
     }
 
 
@@ -103,7 +116,6 @@ public class Player extends Entity{
 
     public void getPlayerImage() {
         try {
-            // standing
             stand1 = new Image(new File("res/Wukong/right/standard1.png").toURI().toString());
             stand2 = new Image(new File("res/Wukong/right/standard2.PNG").toURI().toString());
             stand3 = new Image(new File("res/Wukong/right/standard3.PNG").toURI().toString());
@@ -185,27 +197,21 @@ public class Player extends Entity{
             s3_l = new Image(new File("res/Wukong/left/s3_l.png").toURI().toString());
             s4_l = new Image(new File("res/Wukong/left/s4_l.png").toURI().toString());
 
-
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
     public int getHealth() {
-        if (player1 != null && player1.isAttacking() && player1.distance()) {
-            if(isDenfensed() && player1.getDirection() != direction) {
-                return currentHealth;
-            } else {
-                return currentHealth -= 3;
-            }
-        } else{
-            return currentHealth;
-        }
+        return currentHealth;
     }
 
-    public void updateHealth(int newHealth) {
-        currentHealth = newHealth;
-        // Gọi hàm vẽ lại thanh máu tại đây hoặc từ vòng lặp game
+    public void updateHealth(double damage) {
+
+//        getHealth();
+
+    }
+    public void Health1(double damage){
+        currentHealth -= damage;
     }
 
 
@@ -223,6 +229,8 @@ public class Player extends Entity{
         }
         if (keyH.kPressed) {
             isUsingSkillK = true; // Bắt đầu sử dụng skill qua phím K
+            attackBody.setX(direction.equals("left") ? x - 200 : x + 200);
+            attackBody.setY(y);
             skillKCounter = 0; // Reset bộ đếm thời gian cho skill K
         }
         if (keyH.wPressed) {
@@ -231,26 +239,30 @@ public class Player extends Entity{
         }
         if(keyH.jPressed) {
             isUsingSkillJ = true;
+            attackBody.setX(direction.equals("left") ? x - 100 : x + 100);
+            attackBody.setY(y);
             skillCounter = 0;
         }
 
-    
+
         // Chỉ cho phép di chuyển nếu không sử dụng skill
         if (!isUsingSkill) {
             // Giả định ban đầu là nhân vật không di chuyển
             isMoving = false;
-    
-            
+
+
             if (keyH.leftPressed) {
                 direction = "left";
                 x -= speed;
                 isMoving = true;
-            } 
+            }
             else if (keyH.rightPressed) {
                 direction = "right";
                 x += speed;
                 isMoving = true;
             }
+            body.setY(y);
+            body.setX(x);
         }
     }
 
@@ -440,8 +452,20 @@ public class Player extends Entity{
         }
 
         // Vẽ hình ảnh lên Canvas
-        gc.drawImage(image,  x, y); // x, y là tọa độ vẽ hình ảnh
+        gc.drawImage(image,  x, y, image.getWidth() * 0.8, image.getHeight() * 0.8); // x, y là tọa độ vẽ hình ảnh
+        if (isUsingSkillJ) {
+            gc.setStroke(Color.BLUE);
+            gc.strokeRect(attackBody.getX(), attackBody.getY(), attackBody.getWidth(), attackBody.getHeight());
+        }
+        if (isUsingSkillK) {
+            gc.setStroke(Color.BLUE);
+            gc.strokeRect(attackBody.getX(), attackBody.getY(), attackBody.getWidth(), attackBody.getHeight());
+        }
+
+        gc.setStroke(Color.RED);
+        gc.strokeRect(body.getX(), body.getY(), body.getWidth(), body.getHeight());
     }
+
     public int getX() {
         return x;
     }

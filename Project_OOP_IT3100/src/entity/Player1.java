@@ -1,75 +1,98 @@
-package entity;
+package Entity;
 
 import java.io.File;
+import java.nio.file.Paths;
+
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 
 import javafx.scene.image.Image;
 
-import entity.Player;
+import Entity.Player;
 import Chapter1.Chapter1;
-
+import Entity.Body;
+import Entity.Player;
 public class Player1 extends Entity{
-
-
     public Player player;
 
-    public int maxHealth = 3000; // Máu tối đa, giả sử là 3.000 để phù hợp với số trên hình ảnh
-    public int currentHealth = 3000; // Máu hiện tại
+    private Body body;
+    private Body attackBody;
+
+    public int maxHealth = 30000; // Máu tối đa, giả sử là 3.000 để phù hợp với số trên hình ảnh
+    public int currentHealth = 30000; // Máu hiện tại
     private int barWidth = 400; // Chiều rộng của thanh máu
     private int barHeight = 20; // Chiều cao của thanh máu
-    private int controlDamage = 0;
+    private int originalY;
 
-
-
-
-
+    private MediaPlayer skill1SoundPlayer;
+    private MediaPlayer skill2SoundPlayer;
 
     private int animationFrame = 0; // Biến đếm khung hình hiện tại
     private int animationCounter = 0; // Biến đếm thời gian chuyển đổi khung hình
     private final int animationSpeed = 30; // Tốc độ chuyển đổi khung hình
     private boolean isMoving = false; // Biến để kiểm tra xem nhân vật có di chuyển hay không
-    private boolean isUsingSkill = false;
+    public boolean isUsingSkill1 = false;
+    public boolean isUsingSkill2 = false;
     private boolean isUsingJump = false;
+    private boolean isTakenHit = false;
     private int skillCounter = 0; // Đếm thời gian để điều khiển hoạt ảnh skill
     private boolean isUsingSkillK = false;
     private int skillKCounter = 0; // Đếm thời gian để điều khiển hoạt ảnh skill qua phím K
     Chapter1 gp;
-    public KeyHandlers keyH;
-
+    public KeyHandlers keyH2;
 
     //Interact
     public boolean isAttacking(){
-        if (isUsingSkillK) return true;
+        if (isUsingSkill1 || isUsingSkill2) return true;
         else return false;
     }
 
     public boolean isDenfensed(){
-        if(isUsingSkill) return true;
+        if(isTakenHit) return true;
         else return false;
     }
 
-
-
-
-    public Player1(Chapter1 gp, KeyHandlers keyH, Player player){
+    public Player1(Chapter1 gp, KeyHandlers keyH2, Player player){
         this.gp = gp;
-        this.keyH = keyH;
+        this.keyH2 = keyH2;
         this.player = player;
         setDefaultValues();
         getPlayerImage();
         updateHealth(getHealth());
+        originalY = y;
+        body = new Body(x, y+ 100, 120, 180);
+        attackBody = new Body(x, y, 200, 200);
 
+        try {
+            Media skill1Sound = new Media(new File("res/sounds/skill1.mp3").toURI().toString());
+            skill1SoundPlayer = new MediaPlayer(skill1Sound);
+
+            Media skill2Sound = new Media(new File("res/sounds/skill2.mp3").toURI().toString());
+            skill2SoundPlayer = new MediaPlayer(skill2Sound);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+
+    public Body getBody() {
+        return body;
+    }
+
+    public Body getAttackBody() {
+        return attackBody;
+    }
+
+
     public void setDefaultValues(){
         x = 800;
-        y = 500;
+        y = 415;
         speed = 4;
         direction = "down";
     }
-
 
     private void drawHealthBar(GraphicsContext gc) {
         int healthBarX = 1380 - barWidth - 10;
@@ -90,91 +113,108 @@ public class Player1 extends Entity{
         gc.fillRoundRect(healthBarX + 2, healthBarY + 2, barWidth * healthRatio, barHeight, 8, 8);
     }
 
-
-
     public void getPlayerImage() {
         try {
-            // standing
-            stand1 = new Image(new File("res/Wukong/right/standard1.png").toURI().toString());
-            stand2 = new Image(new File("res/Wukong/right/standard2.PNG").toURI().toString());
-            stand3 = new Image(new File("res/Wukong/right/standard3.PNG").toURI().toString());
-            stand4 = new Image(new File("res/Wukong/right/standard4.PNG").toURI().toString());
-            stand5 = new Image(new File("res/Wukong/right/standard5.PNG").toURI().toString());
+            // IDLE Right
+            R_IDLE_1 = new Image(new File("res/MartialBoss/Right/IDLE/1.png").toURI().toString());
+            R_IDLE_2 = new Image(new File("res/MartialBoss/Right/IDLE/2.png").toURI().toString());
+            R_IDLE_3 = new Image(new File("res/MartialBoss/Right/IDLE/3.png").toURI().toString());
+            R_IDLE_4 = new Image(new File("res/MartialBoss/Right/IDLE/4.png").toURI().toString());
+            R_IDLE_5 = new Image(new File("res/MartialBoss/Right/IDLE/5.png").toURI().toString());
+            R_IDLE_6 = new Image(new File("res/MartialBoss/Right/IDLE/6.png").toURI().toString());
+            R_IDLE_7 = new Image(new File("res/MartialBoss/Right/IDLE/7.png").toURI().toString());
+            R_IDLE_8 = new Image(new File("res/MartialBoss/Right/IDLE/8.png").toURI().toString());
 
-            // right
-            right1 = new Image(new File("res/Wukong/right/right1.PNG").toURI().toString());
-            right2 = new Image(new File("res/Wukong/right/right2.PNG").toURI().toString());
-            right3 = new Image(new File("res/Wukong/right/right3.PNG").toURI().toString());
+            // IDLE Left
+            L_IDLE_1 = new Image(new File("res/MartialBoss/Left/IDLE/1.png").toURI().toString());
+            L_IDLE_2 = new Image(new File("res/MartialBoss/Left/IDLE/2.png").toURI().toString());
+            L_IDLE_3 = new Image(new File("res/MartialBoss/Left/IDLE/3.png").toURI().toString());
+            L_IDLE_4 = new Image(new File("res/MartialBoss/Left/IDLE/4.png").toURI().toString());
+            L_IDLE_5 = new Image(new File("res/MartialBoss/Left/IDLE/5.png").toURI().toString());
+            L_IDLE_6 = new Image(new File("res/MartialBoss/Left/IDLE/6.png").toURI().toString());
+            L_IDLE_7 = new Image(new File("res/MartialBoss/Left/IDLE/7.png").toURI().toString());
+            L_IDLE_8 = new Image(new File("res/MartialBoss/Left/IDLE/8.png").toURI().toString());
 
-            // jump_right Wukong/left/
-            jump1 = new Image(new File("res/Wukong/right/jump_right/jump1.PNG").toURI().toString());
-            jump2 = new Image(new File("res/Wukong/right/jump_right/jump2.PNG").toURI().toString());
-            jump3 = new Image(new File("res/Wukong/right/jump_right/jump3.PNG").toURI().toString());
+            // Run Right - Keycode Right
+            R_Run_1 = new Image(new File("res/MartialBoss/Right/Run/1.png").toURI().toString());
+            R_Run_2 = new Image(new File("res/MartialBoss/Right/Run/2.png").toURI().toString());
+            R_Run_3 = new Image(new File("res/MartialBoss/Right/Run/3.png").toURI().toString());
+            R_Run_4 = new Image(new File("res/MartialBoss/Right/Run/4.png").toURI().toString());
+            R_Run_5 = new Image(new File("res/MartialBoss/Right/Run/5.png").toURI().toString());
+            R_Run_6 = new Image(new File("res/MartialBoss/Right/Run/6.png").toURI().toString());
+            R_Run_7 = new Image(new File("res/MartialBoss/Right/Run/7.png").toURI().toString());
+            R_Run_8 = new Image(new File("res/MartialBoss/Right/Run/8.png").toURI().toString());
 
-            // jump_left
-            jump1_1 = new Image(new File("res/Wukong/left/jump_left/jump1.PNG").toURI().toString());
-            jump2_1 = new Image(new File("res/Wukong/left/jump_left/jump2.PNG").toURI().toString());
-            jump3_1 = new Image(new File("res/Wukong/left/jump_left/jump3.PNG").toURI().toString());
+            // Run Left - Keycode Left
+            L_Run_1 = new Image(new File("res/MartialBoss/Left/Run/1.png").toURI().toString());
+            L_Run_2 = new Image(new File("res/MartialBoss/Left/Run/2.png").toURI().toString());
+            L_Run_3 = new Image(new File("res/MartialBoss/Left/Run/3.png").toURI().toString());
+            L_Run_4 = new Image(new File("res/MartialBoss/Left/Run/4.png").toURI().toString());
+            L_Run_5 = new Image(new File("res/MartialBoss/Left/Run/5.png").toURI().toString());
+            L_Run_6 = new Image(new File("res/MartialBoss/Left/Run/6.png").toURI().toString());
+            L_Run_7 = new Image(new File("res/MartialBoss/Left/Run/7.png").toURI().toString());
+            L_Run_8 = new Image(new File("res/MartialBoss/Left/Run/8.png").toURI().toString());
 
-            // skill j
-            j1 = new Image(new File("res/Wukong/right/quaytay1.PNG").toURI().toString());
-            j2 = new Image(new File("res/Wukong/right/quaytay2.PNG").toURI().toString());
-            j3 = new Image(new File("res/Wukong/right/quaytay3.PNG").toURI().toString());
-            j4 = new Image(new File("res/Wukong/right/quaytay4.PNG").toURI().toString());
-            j5 = new Image(new File("res/Wukong/right/quaytay5.PNG").toURI().toString());
-            j6 = new Image(new File("res/Wukong/right/quaytay6.PNG").toURI().toString());
+            // TakenHit Right
+            R_Take_Hit_1 = new Image(new File("res/MartialBoss/Right/TakeHit/1.png").toURI().toString());
+            R_Take_Hit_2 = new Image(new File("res/MartialBoss/Right/TakeHit/2.png").toURI().toString());
+            R_Take_Hit_3 = new Image(new File("res/MartialBoss/Right/TakeHit/3.png").toURI().toString());
+            R_Take_Hit_4 = new Image(new File("res/MartialBoss/Right/TakeHit/4.png").toURI().toString());
 
-            // skill k
-            k2 = new Image(new File("res/Wukong/right/skill2.PNG").toURI().toString());
-            k3 = new Image(new File("res/Wukong/right/skill3.PNG").toURI().toString());
-            k4 = new Image(new File("res/Wukong/right/skill4.PNG").toURI().toString());
-            k5 = new Image(new File("res/Wukong/right/skill5.PNG").toURI().toString());
-            k6 = new Image(new File("res/Wukong/right/skill6.PNG").toURI().toString());
-            k7 = new Image(new File("res/Wukong/right/skill8.PNG").toURI().toString());
-            k8 = new Image(new File("res/Wukong/right/skill7.PNG").toURI().toString());
-            k9 = new Image(new File("res/Wukong/right/skill9.PNG").toURI().toString());
+            // TakenHit Left
+            L_Take_Hit_1 = new Image(new File("res/MartialBoss/Left/TakeHit/1.png").toURI().toString());
+            L_Take_Hit_2 = new Image(new File("res/MartialBoss/Left/TakeHit/2.png").toURI().toString());
+            L_Take_Hit_3 = new Image(new File("res/MartialBoss/Left/TakeHit/3.png").toURI().toString());
+            L_Take_Hit_4 = new Image(new File("res/MartialBoss/Left/TakeHit/4.png").toURI().toString());
 
-            // left
-            left1 = new Image(new File("res/Wukong/left/left1.PNG").toURI().toString());
-            left2 = new Image(new File("res/Wukong/left/left2.PNG").toURI().toString());
-            left3 = new Image(new File("res/Wukong/left/left3.PNG").toURI().toString());
+            // Attack1 Right - Keycode 1
+            R_Attack1_1 = new Image(new File("res/MartialBoss/Right/Attack1/1.png").toURI().toString());
+            R_Attack1_2 = new Image(new File("res/MartialBoss/Right/Attack1/2.png").toURI().toString());
+            R_Attack1_3 = new Image(new File("res/MartialBoss/Right/Attack1/3.png").toURI().toString());
+            R_Attack1_4 = new Image(new File("res/MartialBoss/Right/Attack1/4.png").toURI().toString());
+            R_Attack1_5 = new Image(new File("res/MartialBoss/Right/Attack1/5.png").toURI().toString());
+            R_Attack1_6 = new Image(new File("res/MartialBoss/Right/Attack1/6.png").toURI().toString());
 
-            // j_left
-            j1_l = new Image(new File("res/Wukong/left/quaytay1_left.PNG").toURI().toString());
-            j2_l = new Image(new File("res/Wukong/left/quaytay2_left.PNG").toURI().toString());
-            j3_l = new Image(new File("res/Wukong/left/quaytay3_left.PNG").toURI().toString());
-            j4_l = new Image(new File("res/Wukong/left/quaytay4_left.PNG").toURI().toString());
-            j5_l = new Image(new File("res/Wukong/left/quaytay5_left.PNG").toURI().toString());
-            j6_l = new Image(new File("res/Wukong/left/quaytay6_left.PNG").toURI().toString());
+            // Attack1 Left - Keycode 1
+            L_Attack1_1 = new Image(new File("res/MartialBoss/Left/Attack1/1.png").toURI().toString());
+            L_Attack1_2 = new Image(new File("res/MartialBoss/Left/Attack1/2.png").toURI().toString());
+            L_Attack1_3 = new Image(new File("res/MartialBoss/Left/Attack1/3.png").toURI().toString());
+            L_Attack1_4 = new Image(new File("res/MartialBoss/Left/Attack1/4.png").toURI().toString());
+            L_Attack1_5 = new Image(new File("res/MartialBoss/Left/Attack1/5.png").toURI().toString());
+            L_Attack1_6 = new Image(new File("res/MartialBoss/Left/Attack1/6.png").toURI().toString());
 
-            // k_left
-            k2_l = new Image(new File("res/Wukong/left/skill2_left.PNG").toURI().toString());
-            k3_l = new Image(new File("res/Wukong/left/skill3_left.PNG").toURI().toString());
-            k4_l = new Image(new File("res/Wukong/left/skill4_left.PNG").toURI().toString());
-            k5_l = new Image(new File("res/Wukong/left/skill5_left.PNG").toURI().toString());
-            k6_l = new Image(new File("res/Wukong/left/skill6_left.PNG").toURI().toString());
-            k7_l = new Image(new File("res/Wukong/left/skill7_left.PNG").toURI().toString());
-            k8_l = new Image(new File("res/Wukong/left/skill8_left.PNG").toURI().toString());
-            k9_l = new Image(new File("res/Wukong/left/skill9_left.PNG").toURI().toString());
+            // Attack2 Right - Keycode 2
+            R_Attack2_1 = new Image(new File("res/MartialBoss/Right/Attack2/1.png").toURI().toString());
+            R_Attack2_2 = new Image(new File("res/MartialBoss/Right/Attack2/2.png").toURI().toString());
+            R_Attack2_3 = new Image(new File("res/MartialBoss/Right/Attack2/3.png").toURI().toString());
+            R_Attack2_4 = new Image(new File("res/MartialBoss/Right/Attack2/4.png").toURI().toString());
+            R_Attack2_5 = new Image(new File("res/MartialBoss/Right/Attack2/5.png").toURI().toString());
+            R_Attack2_6 = new Image(new File("res/MartialBoss/Right/Attack2/6.png").toURI().toString());
 
-            // standing_left
-            stand1_l = new Image(new File("res/Wukong/left/standard1_left.PNG").toURI().toString());
-            stand2_l = new Image(new File("res/Wukong/left/standard2_left.PNG").toURI().toString());
-            stand3_l = new Image(new File("res/Wukong/left/standard3_left.PNG").toURI().toString());
-            stand4_l = new Image(new File("res/Wukong/left/standard4_left.PNG").toURI().toString());
-            stand5_l = new Image(new File("res/Wukong/left/standard5_left.PNG").toURI().toString());
+            // Attack2 Left - Keycode 2
+            L_Attack2_1 = new Image(new File("res/MartialBoss/Left/Attack2/1.png").toURI().toString());
+            L_Attack2_2 = new Image(new File("res/MartialBoss/Left/Attack2/2.png").toURI().toString());
+            L_Attack2_3 = new Image(new File("res/MartialBoss/Left/Attack2/3.png").toURI().toString());
+            L_Attack2_4 = new Image(new File("res/MartialBoss/Left/Attack2/4.png").toURI().toString());
+            L_Attack2_5 = new Image(new File("res/MartialBoss/Left/Attack2/5.png").toURI().toString());
+            L_Attack2_6 = new Image(new File("res/MartialBoss/Left/Attack2/6.png").toURI().toString());
 
+            // Death Right
+            R_Death_1 = new Image(new File("res/MartialBoss/Right/Death/1.png").toURI().toString());
+            R_Death_2 = new Image(new File("res/MartialBoss/Right/Death/2.png").toURI().toString());
+            R_Death_3 = new Image(new File("res/MartialBoss/Right/Death/3.png").toURI().toString());
+            R_Death_4 = new Image(new File("res/MartialBoss/Right/Death/4.png").toURI().toString());
+            R_Death_5 = new Image(new File("res/MartialBoss/Right/Death/5.png").toURI().toString());
+            R_Death_6 = new Image(new File("res/MartialBoss/Right/Death/6.png").toURI().toString());
 
-            //skill s right
-            s1 = new Image(new File("res/Wukong/right/s1_r.png").toURI().toString());
-            s2 = new Image(new File("res/Wukong/right/s2_r.png").toURI().toString());
-            s3 = new Image(new File("res/Wukong/right/s3_r.png").toURI().toString());
-            s4 = new Image(new File("res/Wukong/right/s4_r.png").toURI().toString());
-            //skill s left
-            s1_l = new Image(new File("res/Wukong/left/s1_l.png").toURI().toString());
-            s2_l = new Image(new File("res/Wukong/left/s2_l.png").toURI().toString());
-            s3_l = new Image(new File("res/Wukong/left/s3_l.png").toURI().toString());
-            s4_l = new Image(new File("res/Wukong/left/s4_l.png").toURI().toString());
+            // Death Left
+            L_Death_1 = new Image(new File("res/MartialBoss/Left/Death/1.png").toURI().toString());
+            L_Death_2 = new Image(new File("res/MartialBoss/Left/Death/2.png").toURI().toString());
+            L_Death_3 = new Image(new File("res/MartialBoss/Left/Death/3.png").toURI().toString());
+            L_Death_4 = new Image(new File("res/MartialBoss/Left/Death/4.png").toURI().toString());
+            L_Death_5 = new Image(new File("res/MartialBoss/Left/Death/5.png").toURI().toString());
+            L_Death_6 = new Image(new File("res/MartialBoss/Left/Death/6.png").toURI().toString());
+
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -182,96 +222,97 @@ public class Player1 extends Entity{
     }
 
     public int getHealth() {
-        if (player != null && player.isAttacking() && distance()) {
-            if(isDenfensed() && player.getDirection() != direction) {
-                return currentHealth;
-            } else {
-                return currentHealth-=3;
-            }
-        } else{
-            return currentHealth;
+        if(player != null && player.isAttacking() && player.getAttackBody().intersects(body)){
+            currentHealth -= 0.0001;
         }
+        return currentHealth;
     }
 
-    public void updateHealth(int newHealth) {
-        currentHealth = newHealth;
-        // Gọi hàm vẽ lại thanh máu tại đây hoặc từ vòng lặp game
+    public void updateHealth(int damage) {
+        getHealth();
     }
-
-
-
-
-
-
-
 
     public void update() {
-        // Kiểm tra xem phím "J" có được nhấn không
-        if (keyH.Pressed1) {
-            isUsingSkill = true; // Bắt đầu sử dụng skill
-            skillCounter = 0; // Reset bộ đếm thời gian cho skill
+        if (keyH2.Pressed1) {
+            isUsingSkill1 = true; // Bat dau su dung skill 1
+            playSkill1Sound();
+            if(direction == "left") {
+                attackBody.setX(x+50);
+                attackBody.setY(y + 70);
+            } else {
+                attackBody.setX(x + 210);
+                attackBody.setY(y + 70);
+            }
+            skillCounter = 0;
         }
-        if (keyH.Pressed2) {
-            isUsingSkillK = true; // Bắt đầu sử dụng skill qua phím K
-            skillKCounter = 0; // Reset bộ đếm thời gian cho skill K
-        }
-        if (keyH.Pressed3) {
-            isUsingJump = true;
+        if (keyH2.Pressed2) {
+            isUsingSkill2 = true; // Bat dau su dung skill 2
+            playSkill2Sound();
+            attackBody.setX(direction.equals("left") ? x + 50 : x + 210);
             skillCounter = 0;
         }
 
 
-        // Chỉ cho phép di chuyển nếu không sử dụng skill
-        if (!isUsingSkill) {
-            // Giả định ban đầu là nhân vật không di chuyển
+        if (keyH2.Pressed3) {
+            isTakenHit = true;
+            skillCounter = 0;
+        }
+
+        if (!isUsingSkill1 && !isUsingSkill2) {
             isMoving = false;
 
-
-            if (keyH.leftPressed1) {
+            if (keyH2.leftPressed) {
                 direction = "left";
                 x -= speed;
                 isMoving = true;
             }
-            else if (keyH.rightPressed1) {
+
+            if (keyH2.rightPressed) {
                 direction = "right";
                 x += speed;
                 isMoving = true;
             }
         }
+        body.setX(x);
+        body.setY(y + 100);
+        attackBody.setX(x);
+        attackBody.setY(y);
     }
 
     public void draw(GraphicsContext gc) {
         Image image = null;
-        drawHealthBar(gc);  // Giả sử bạn đã có phương thức vẽ thanh máu
-        gc.save();
+        drawHealthBar(gc);
         // Tăng animationCounter mỗi lần vẽ
         animationCounter++;
         if (animationCounter > animationSpeed) {
             animationCounter = 0;
 
             // Xử lý khi đang sử dụng skill qua phím J
-            if (isUsingSkill) {
-                animationFrame = (animationFrame + 1) % 6; // Chuyển đổi giữa 6 khung hình skill J
+            if (isUsingSkill1) {
+                animationFrame = (animationFrame + 1) % 6; // Chuyển đổi giữa 6 khung hình skill 1
                 skillCounter++;
 
                 if (skillCounter >= 6) {
-                    isUsingSkill = false; // Dừng sử dụng skill J
+                    isUsingSkill1 = false; // Dừng sử dụng skill 1
+                    stopSkill1Sound();
                 }
             }
             // Xử lý khi đang sử dụng skill qua phím K
-            else if (isUsingSkillK) {
-                animationFrame = (animationFrame + 1) % 8; // Chuyển đổi giữa 8 khung hình skill K
+            else if (isUsingSkill2) {
+                animationFrame = (animationFrame + 1) % 6; // Chuyển đổi giữa 8 khung hình skill K
                 skillKCounter++;
 
-                if (skillKCounter >= 8) {
-                    isUsingSkillK = false; // Dừng sử dụng skill K
+                if (skillKCounter >= 6) {
+                    isUsingSkill2 = false; // Dừng sử dụng skill 2
+                    stopSkill2Sound();
                 }
             }
+
             // Xử lý khi sử dụng skill nhảy
             else if (isUsingJump) {
-                animationFrame = (animationFrame + 1) % 3;
+                animationFrame = (animationFrame + 1) % 4;
                 skillCounter++;
-                if (skillCounter >= 3) {
+                if (skillCounter >= 4) {
                     isUsingJump = false;
                 }
             }
@@ -280,121 +321,121 @@ public class Player1 extends Entity{
                 switch (direction) {
                     case "left":
                     case "right":
-                        animationFrame = (animationFrame + 1) % 3; // Chuyển đổi giữa 3 khung hình
+                        animationFrame = (animationFrame + 1) % 8; // Chuyển đổi giữa 3 khung hình
                         break;
                 }
             } else {
-                animationFrame = (animationFrame + 1) % 5; // Chuyển đổi giữa 5 khung hình đứng yên
+                animationFrame = (animationFrame + 1) % 8; // Chuyển đổi giữa 5 khung hình đứng yên
             }
         }
 
-        // Vẽ hình ảnh cho skill J
-        if (isUsingSkill) {
-            if (direction.equals("left")) {
-                switch (animationFrame) {
-                    case 0: image = j1_l; break;
-                    case 1: image = j2_l; break;
-                    case 2: image = j3_l; break;
-                    case 3: image = j4_l; break;
-                    case 4: image = j5_l; break;
-                    case 5: image = j6_l; break;
-                }
-            } else {
-                switch (animationFrame) {
-                    case 0: image = j1; break;
-                    case 1: image = j2; break;
-                    case 2: image = j3; break;
-                    case 3: image = j4; break;
-                    case 4: image = j5; break;
-                    case 5: image = j6; break;
-                }
-            }
-        }
-        // Vẽ hình ảnh cho skill K
-        else if (isUsingSkillK) {
-            controlDamage++;
-            if (direction.equals("left")) {
-                switch (animationFrame) {
-                    case 0: image = k2_l; break;
-                    case 1: image = k3_l; break;
-                    case 2: image = k4_l; break;
-                    case 3: image = k5_l; break;
-                    case 4: image = k6_l; break;
-                    case 5: image = k7_l; x -= 2 * speed; break;
-                    case 6: image = k8_l; break;
-                    case 7: image = k9_l; break;
-                    case 8: controlDamage --;
-                }
-            } else {
-                switch (animationFrame) {
-                    case 0: image = k2; break;
-                    case 1: image = k3; break;
-                    case 2: image = k4; break;
-                    case 3: image = k5; break;
-                    case 4: image = k6; break;
-                    case 5: image = k7; x += 2 * speed; break;
-                    case 6: image = k8; break;
-                    case 7: image = k9; break;
-                    case 8: controlDamage --;
-                }
-            }
-        }
-        // Vẽ hình ảnh cho skill nhảy
-        else if (isUsingJump) {
+        gc.save();
 
-            if (direction.equals("left")) {
+        drawHealthBar(gc);
+
+        gc.scale(3.5, 3.5);
+        if (isMoving) {
+            // Di chuyển - điều chỉnh frame tương ứng
+            if (direction.equals("right")) {
                 switch (animationFrame) {
-                    case 0: image = jump1_1; x -= 1 * speed; break;
-                    case 1: image = jump2_1; x -= 1 * speed; break;
-                    case 2: image = jump3_1; x -= 1 * speed; break;
+                    case 0: image = R_Run_1; break;
+                    case 1: image = R_Run_2; break;
+                    case 2: image = R_Run_3; break;
+                    case 3: image = R_Run_4; break;
+                    case 4: image = R_Run_5; break;
+                    case 5: image = R_Run_6; break;
+                    case 6: image = R_Run_7; break;
+                    case 7: image = R_Run_8; break;
                 }
-            } else {
+            } else if (direction.equals("left")) {
                 switch (animationFrame) {
-                    case 0: image = jump1; x += 1 * speed; break;
-                    case 1: image = jump2; x += 1 * speed; break;
-                    case 2: image = jump3; x += 1 * speed; break;
+                    case 0: image = L_Run_1; break;
+                    case 1: image = L_Run_2; break;
+                    case 2: image = L_Run_3; break;
+                    case 3: image = L_Run_4; break;
+                    case 4: image = L_Run_5; break;
+                    case 5: image = L_Run_6; break;
+                    case 6: image = L_Run_7; break;
+                    case 7: image = L_Run_8; break;
                 }
             }
         }
-        // Di chuyển hoặc đứng yên
-        else if(!isMoving) {
-            if (direction.equals("left")) {
+        else if (isUsingSkill1) {
+            // Kỹ năng 1
+            if (direction.equals("right")) {
                 switch (animationFrame) {
-                    case 0: image = stand1_l; break;
-                    case 1: image = stand2_l; break;
-                    case 2: image = stand3_l; break;
-                    case 3: image = stand4_l; break;
-                    case 4: image = stand5_l; break;
+                    case 0: image = R_Attack1_1; break;
+                    case 1: image = R_Attack1_2; break;
+                    case 2: image = R_Attack1_3; break;
+                    case 3: image = R_Attack1_4; break;
+                    case 4: image = R_Attack1_5; break;
+                    case 5: image = R_Attack1_6;break;
                 }
-            } else {
+            } else if (direction.equals("left")) {
                 switch (animationFrame) {
-                    case 0: image = stand1; break;
-                    case 1: image = stand2; break;
-                    case 2: image = stand3; break;
-                    case 3: image = stand4; break;
-                    case 4: image = stand5; break;
-                }
-            }
-        } else  {
-            if (direction.equals("left")) {
-                switch (animationFrame) {
-                    case 0: image = left1; break;
-                    case 1: image = left2; break;
-                    case 2: image = left3; break;
+                    case 0: image = L_Attack1_1; break;
+                    case 1: image = L_Attack1_2; break;
+                    case 2: image = L_Attack1_3; break;
+                    case 3: image = L_Attack1_4; break;
+                    case 4: image = L_Attack1_5; break;
+                    case 5: image = L_Attack1_6; break;
                 }
             }
-            // Xử lý di chuyển sang phải
-            else if (direction.equals("right")) {
+        }
+        else if (isUsingSkill2) {
+            // Kỹ năng 2
+            if (direction.equals("right")) {
                 switch (animationFrame) {
-                    case 0: image = right1; break;
-                    case 1: image = right2; break;
-                    case 2: image = right3; break;
+                    case 0: image = R_Attack2_1; break;
+                    case 1: image = R_Attack2_2; break;
+                    case 2: image = R_Attack2_3; break;
+                    case 3: image = R_Attack2_4; break;
+                    case 4: image = R_Attack2_5; break;
+                    case 5: image = R_Attack2_6; break;
+                }
+            } else if (direction.equals("left")) {
+                switch (animationFrame) {
+                    case 0: image = L_Attack2_1; break;
+                    case 1: image = L_Attack2_2; break;
+                    case 2: image = L_Attack2_3; break;
+                    case 3: image = L_Attack2_4; break;
+                    case 4: image = L_Attack2_5; break;
+                    case 5: image = L_Attack2_6; break;
                 }
             }
         }
 
-        // Vẽ hình ảnh lên Canvas
-        gc.drawImage(image,  x, y); // x, y là tọa độ vẽ hình ảnh
+        else {
+            // Đứng yên
+            if (direction.equals("right")) {
+                switch (animationFrame) {
+                    case 0: image = R_IDLE_1; break;
+                    case 1: image = R_IDLE_2; break;
+                    case 2: image = R_IDLE_3; break;
+                    case 3: image = R_IDLE_4; break;
+                    case 4: image = R_IDLE_5; break;
+                    case 5: image = R_IDLE_6; break;
+                    case 6: image = R_IDLE_7; break;
+                    case 7: image = R_IDLE_8; break;
+                }
+            } else if (direction.equals("left")) {
+                switch (animationFrame) {
+                    case 0: image = L_IDLE_1; break;
+                    case 1: image = L_IDLE_2; break;
+                    case 2: image = L_IDLE_3; break;
+                    case 3: image = L_IDLE_4; break;
+                    case 4: image = L_IDLE_5; break;
+                    case 5: image = L_IDLE_6; break;
+                    case 6: image = L_IDLE_7; break;
+                    case 7: image = L_IDLE_8; break;
+                }
+            }
+        }
+
+        gc.drawImage(image,  x/3.5, y/3.5); // x, y là tọa độ vẽ hình ảnh
+
+        gc.restore();
+
     }
     public int getX() {
         return x;
@@ -409,5 +450,34 @@ public class Player1 extends Entity{
         else return false;
     }
 
+    public void takeDamage(int damage) {
+        currentHealth -= damage;
+        if (currentHealth < 0) currentHealth = 0;
+    }
 
+    private void playSkill1Sound() {
+        if (skill1SoundPlayer != null) {
+            skill1SoundPlayer.stop(); // Đảm bảo phát từ đầu
+            skill1SoundPlayer.play();
+        }
+    }
+
+    private void stopSkill1Sound() {
+        if (skill1SoundPlayer != null) {
+            skill1SoundPlayer.stop(); // Dừng phát âm thanh
+        }
+    }
+
+    private void playSkill2Sound() {
+        if (skill2SoundPlayer != null) {
+            skill2SoundPlayer.stop(); // Đảm bảo phát từ đầu
+            skill2SoundPlayer.play();
+        }
+    }
+
+    private void stopSkill2Sound() {
+        if (skill2SoundPlayer != null) {
+            skill2SoundPlayer.stop(); // Dừng phát âm thanh
+        }
+    }
 }

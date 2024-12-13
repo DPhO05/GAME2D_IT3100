@@ -1,8 +1,9 @@
 package Chapter1;
-
+import Entity.Player1;
+import Entity.Entity;
 import MainMenu.ChapterMenu;
 import MainMenu.GameLauncher;
-import entity.Player;
+import Entity.Player;
 import javafx.animation.PauseTransition;
 import javafx.scene.Scene;
 import javafx.scene.control.Slider;
@@ -26,12 +27,14 @@ public class PauseMenu{
     private Chapter1 chapter1;
     private MediaPlayer mediaPlayer;
     private Player player;
+    private  Player1 player1_2;
 
-    public PauseMenu(Chapter1 chapter1, MediaPlayer mediaPlayer, GameLauncher gameLauncher, Player player){
+    public PauseMenu(Chapter1 chapter1, MediaPlayer mediaPlayer, GameLauncher gameLauncher, Player player, Player1 player1_2){
         this.chapter1 = chapter1;
         this.mediaPlayer = mediaPlayer;
         this.gameLauncher = gameLauncher;
         this.player = player;
+        this.player1_2 = player1_2;
     }
 
     public void showPauseMenu(Stage stage){

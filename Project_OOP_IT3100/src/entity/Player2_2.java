@@ -1,4 +1,4 @@
-package entity;
+package Entity;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -6,10 +6,11 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
-
+import javafx.scene.media.MediaPlayer;
+import javafx.scene.media.Media;
 import javafx.scene.image.Image;
 
-import entity.Player1_2;
+import Entity.Player1_2;
 import Chapter2.Chapter2;
 
 public class Player2_2 extends Entity{
@@ -30,7 +31,8 @@ public class Player2_2 extends Entity{
 
 
 
-
+    private MediaPlayer runningSoundPlayer;
+    private MediaPlayer attackSoundPlayer;
 
     private int animationFrame = 0; // Biến đếm khung hình hiện tại
     private int animationCounter = 0; // Biến đếm thời gian chuyển đổi khung hình
@@ -69,6 +71,17 @@ public class Player2_2 extends Entity{
         updateHealth(getHealth());
         body = new Body(x, y,200,200);
         attackBody = new Body(x,y,200,200);
+        try {
+            Media runningSound = new Media(new File("C:/Users/ADMIN/Downloads/ProjectGame2D/Project_OOP_IT3100/res/Boss_chapter2/Sound/skill1.mp3").toURI().toString());
+            runningSoundPlayer = new MediaPlayer(runningSound);
+            runningSoundPlayer.setCycleCount(MediaPlayer.INDEFINITE);
+
+            Media attackSound = new Media(new File("C:/Users/ADMIN/Downloads/ProjectGame2D/Project_OOP_IT3100/res/Boss_chapter2/Sound/skill2.mp3").toURI().toString());
+            attackSoundPlayer = new MediaPlayer(attackSound);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
 
 
     }
@@ -198,6 +211,16 @@ public class Player2_2 extends Entity{
             att2_6l = new Image(new File("res/Boss_chapter2/left/att2_6l.png").toURI().toString());
             att2_7l = new Image(new File("res/Boss_chapter2/left/att2_7l.png").toURI().toString());
             att2_8l = new Image(new File("res/Boss_chapter2/left/att2_8l.png").toURI().toString());
+            //Taken hit
+
+            hit1_r = new Image(new File("res/Boss_chapter2/right/hit1_r.png").toURI().toString());
+            hit2_r = new Image(new File("res/Boss_chapter2/right/hit2_r.png").toURI().toString());
+            hit3_r = new Image(new File("res/Boss_chapter2/right/hit3_r.png").toURI().toString());
+
+            hit1_l = new Image(new File("res/Boss_chapter2/left/hit1_l.png").toURI().toString());
+            hit2_l = new Image(new File("res/Boss_chapter2/left/hit2_l.png").toURI().toString());
+            hit3_l = new Image(new File("res/Boss_chapter2/left/hit3_l.png").toURI().toString());
+
 
 
 
@@ -233,17 +256,16 @@ public class Player2_2 extends Entity{
             } else {attackBody.setX(x + 220);};
             attackBody.setY(y+300);
             skillCounter = 0; // Reset bộ đếm thời gian cho skill
+            playAttackSound2();
         }
         if (keyH.Pressed2) {
             isUsingSkillK = true; // Bắt đầu sử dụng skill qua phím K
             attackBody.setX(direction.equals("left") ? x+50 : x + 220);
             attackBody.setY(y+300);
             skillKCounter = 0; // Reset bộ đếm thời gian cho skill K
+            playAttackingSound1();
         }
-        if (keyH.Pressed3) {
-            isUsingJump = true;
-            skillCounter = 0;
-        }
+
 
 
         // Chỉ cho phép di chuyển nếu không sử dụng skill
@@ -288,6 +310,7 @@ public class Player2_2 extends Entity{
 
                 if (skillCounter >= 8   ) {
                     isUsingSkill = false; // Dừng sử dụng skill J
+                    stopAttackSound2();
                 }
             }
             // Xử lý khi đang sử dụng skill qua phím K
@@ -297,16 +320,15 @@ public class Player2_2 extends Entity{
 
                 if (skillKCounter >= 7) {
                     isUsingSkillK = false; // Dừng sử dụng skill K
+                    stopAttackingSound1();
                 }
             }
-            // Xử lý khi sử dụng skill nhảy
-            else if (isUsingJump) {
+            else if(player1_2.isAttacking()) {
                 animationFrame = (animationFrame + 1) % 3;
                 skillCounter++;
-                if (skillCounter >= 3) {
-                    isUsingJump = false;
-                }
+
             }
+
             // Xử lý di chuyển hoặc đứng yên
             else if (isMoving) {
                 switch (direction) {
@@ -375,6 +397,21 @@ public class Player2_2 extends Entity{
 
                 }
             }
+        }
+        else if (player1_2.isAttacking()) {
+             if (direction.equals("right")) {
+                 switch (animationFrame) {
+                     case 0: image = hit1_r;
+                     case 1: image = hit2_r;
+                     case 2: image = hit3_r;
+                 }
+             } else {
+                 switch (animationFrame) {
+                     case 0: image = hit1_l;
+                     case 1: image = hit2_l;
+                     case 2: image = hit3_l;
+                 }
+             }
         }
 
         // Di chuyển hoặc đứng yên
@@ -456,6 +493,29 @@ public class Player2_2 extends Entity{
         int distanceToPlayer = Math.abs(x - player1_2.getX());
         if (distanceToPlayer < 30) return true;
         else return false;
+    }
+    private void playAttackingSound1() {
+        if (runningSoundPlayer != null && runningSoundPlayer.getStatus() != MediaPlayer.Status.PLAYING) {
+            runningSoundPlayer.play();
+        }
+    }
+
+    private void stopAttackingSound1() {
+        if (runningSoundPlayer != null && runningSoundPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
+            runningSoundPlayer.stop();
+        }
+    }
+
+    private void playAttackSound2() {
+        if (attackSoundPlayer != null && attackSoundPlayer.getStatus() != MediaPlayer.Status.PLAYING) {
+            attackSoundPlayer.play();
+        }
+    }
+
+    private void stopAttackSound2() {
+        if (attackSoundPlayer != null && attackSoundPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
+            attackSoundPlayer.stop();
+        }
     }
 
 

@@ -1,4 +1,4 @@
-package entity;
+package Entity;
 
 public class Body {
     private double x, y;       // Tọa độ của body

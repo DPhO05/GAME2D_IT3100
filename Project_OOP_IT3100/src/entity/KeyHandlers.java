@@ -1,4 +1,4 @@
-package entity;
+package Entity;
 
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -40,7 +40,7 @@ public class KeyHandlers {
         if (code == KeyCode.V){
             Pressed1 = true;
         }
-        if (code == KeyCode.END){
+        if (code == KeyCode.X){
             Pressed0 = true;
         }
         if (code == KeyCode.Z){
@@ -84,7 +84,7 @@ public class KeyHandlers {
         if (code == KeyCode.V){
             Pressed1 = false;
         }
-        if (code == KeyCode.END){
+        if (code == KeyCode.X){
             Pressed0 = false;
         }
         if (code == KeyCode.Z){

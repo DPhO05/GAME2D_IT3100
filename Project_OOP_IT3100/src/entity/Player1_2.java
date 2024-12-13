@@ -1,21 +1,22 @@
-package entity;
+package Entity;
 
 import java.io.File;
 import java.util.function.BiPredicate;
 
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.media.Media;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
-
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.image.Image;
 
 
 
-import entity.Player2_2;
+import Entity.Player2_2;
 
 import Chapter2.Chapter2;
-import entity.KeyHandlers;
+import Entity.KeyHandlers;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 
@@ -24,7 +25,8 @@ public class Player1_2 extends Entity{
     Player2_2 player2_2;
     private Body body;
     private Body attackBody;
-
+    private MediaPlayer runningSoundPlayer;
+    private MediaPlayer attackSoundPlayer;
     public double maxHealth = 3000; // Máu tối đa, giả sử là 3.000 để phù hợp với số trên hình ảnh
     public int currentHealth = 3000; // Máu hiện tại
     private int barWidth = 400; // Chiều rộng của thanh máu
@@ -37,7 +39,7 @@ public class Player1_2 extends Entity{
 
     private int animationFrame = 0; // Biến đếm khung hình hiện tại
     private int animationCounter = 0; // Biến đếm thời gian chuyển đổi khung hình
-    private final int animationSpeed = 30; // Tốc độ chuyển đổi khung hình
+    private final int animationSpeed = 25; // Tốc độ chuyển đổi khung hình
     private boolean isMoving = false; // Biến để kiểm tra xem nhân vật có di chuyển hay không
     private boolean isUsingSkill = false;
     private boolean isUsingJump = false;
@@ -58,6 +60,16 @@ public class Player1_2 extends Entity{
 //        updateHealth();
         body = new Body(x,y,200, 200);
         attackBody = new Body(x,y, 200, 200);
+        try {
+            Media runningSound = new Media(new File("C:/Users/ADMIN/Downloads/ProjectGame2D/Project_OOP_IT3100/res/Wukong/SoundEffect/runningSoundEffect.mp3").toURI().toString());
+            runningSoundPlayer = new MediaPlayer(runningSound);
+            runningSoundPlayer.setCycleCount(MediaPlayer.INDEFINITE);
+
+            Media attackSound = new Media(new File("C:/Users/ADMIN/Downloads/ProjectGame2D/Project_OOP_IT3100/res/Wukong/SoundEffect/attackSoundEffect.mp3").toURI().toString());
+            attackSoundPlayer = new MediaPlayer(attackSound);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -69,7 +81,7 @@ public class Player1_2 extends Entity{
     }
     public void setDefaultValues(){
         x = 0;
-        y = 500;
+        y = 550;
         speed = 4;
         direction = "down";
 
@@ -232,6 +244,7 @@ public class Player1_2 extends Entity{
             attackBody.setX(direction.equals("left") ? x - 200 : x + 200);
             attackBody.setY(y);
             skillKCounter = 0; // Reset bộ đếm thời gian cho skill K
+            playAttackSound();
         }
         if (keyH.wPressed) {
             isUsingJump = true;
@@ -242,6 +255,7 @@ public class Player1_2 extends Entity{
             attackBody.setX(direction.equals("left") ? x - 100 : x + 100);
             attackBody.setY(y);
             skillCounter = 0;
+            playAttackSound();
         }
 
 
@@ -263,6 +277,11 @@ public class Player1_2 extends Entity{
             }
             body.setY(y);
             body.setX(x);
+            if (isMoving) {
+                playRunningSound();
+            } else {
+                stopRunningSound();
+            }
         }
     }
 
@@ -289,6 +308,7 @@ public class Player1_2 extends Entity{
                 skillCounter ++;
                 if (skillCounter >= 4){
                     isUsingSkillJ = false;
+                    stopAttackSound();
                 }
             }
             // Xử lý khi đang sử dụng skill qua phím K
@@ -298,6 +318,7 @@ public class Player1_2 extends Entity{
 
                 if (skillKCounter >= 8) {
                     isUsingSkillK = false; // Dừng sử dụng skill K
+                    stopAttackSound();
                 }
             }
             // Xử lý khi sử dụng skill nhảy
@@ -452,7 +473,7 @@ public class Player1_2 extends Entity{
         }
 
         // Vẽ hình ảnh lên Canvas
-        gc.drawImage(image,  x, y); // x, y là tọa độ vẽ hình ảnh
+        gc.drawImage(image,  x, y, image.getWidth() * 0.8, image.getHeight() * 0.8); // x, y là tọa độ vẽ hình ảnh
         if (isUsingSkillJ) {
             gc.setStroke(Color.BLUE);
             gc.strokeRect(attackBody.getX(), attackBody.getY(), attackBody.getWidth(), attackBody.getHeight());
@@ -472,6 +493,29 @@ public class Player1_2 extends Entity{
 
     public String getDirection(){
         return direction;
+    }
+    private void playRunningSound() {
+        if (runningSoundPlayer != null && runningSoundPlayer.getStatus() != MediaPlayer.Status.PLAYING) {
+            runningSoundPlayer.play();
+        }
+    }
+
+    private void stopRunningSound() {
+        if (runningSoundPlayer != null && runningSoundPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
+            runningSoundPlayer.stop();
+        }
+    }
+
+    private void playAttackSound() {
+        if (attackSoundPlayer != null && attackSoundPlayer.getStatus() != MediaPlayer.Status.PLAYING) {
+            attackSoundPlayer.play();
+        }
+    }
+
+    private void stopAttackSound() {
+        if (attackSoundPlayer != null && attackSoundPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
+            attackSoundPlayer.stop();
+        }
     }
 
 

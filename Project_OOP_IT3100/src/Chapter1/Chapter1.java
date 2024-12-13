@@ -2,10 +2,10 @@ package Chapter1;
 
 import MainMenu.ChapterMenu;
 import MainMenu.GameLauncher;
-import entity.KeyHandlers;
+import Entity.KeyHandlers;
 
-import entity.Player;
-import entity.Player1;
+import Entity.Player;
+import Entity.Player1;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -155,7 +155,7 @@ public class Chapter1 extends Pane {
         pauseButton.setLayoutX(665);
         pauseButton.setLayoutY(10);
 
-        PauseMenu pauseMenu = new PauseMenu(this, chapter1MusicPlayer, gameLauncher, player);
+        PauseMenu pauseMenu = new PauseMenu(this, chapter1MusicPlayer, gameLauncher, player, player1);
         pauseButton.setOnAction(e ->{
             isPaused = !isPaused;  // Đổi trạng thái Pause
             if (isPaused) {
